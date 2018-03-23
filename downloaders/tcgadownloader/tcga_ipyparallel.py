@@ -1,4 +1,4 @@
-import sys, time, subprocess as sp
+import sys, subprocess, argparse
 from IPython.parallel import Client
 
 
@@ -68,17 +68,25 @@ def progress(ar):  # count, total, status=''
     return
 
 
+def get_args():
+    parser = argparse.ArgumentParser(description='download tcga data using curl and IPy Parallel')
+    parser.add_argument( '-mf', '--manifest-file', help="Give the full path to the manifest file")
+    parser.add_argument( '-tf', '--token-file', help="Give the full path to the token file")
+    parser.add_argument('-u','--add-uuid-to-filename', choices=[True,False], default=False)
+    return parser.parse_args()
+
 if __name__ == '__main__':
     # m = "/Users/aragaven/Downloads/gdc_manifest_20180202_005135.txt"
     # t = "/Users/aragaven/Downloads/gdc-user-token.2018-03-06T18_16_48.240Z.txt"
     # md5 = "/Users/aragaven/scratch/test_checksum.md5"
     # coms = setup(m,t,md5)
-
-    coms = setup(sys.argv[1], sys.argv[2], sys.argv[3])
+    my_args =get_args()
+    coms = setup(my_args.manifest_file, my_args.token_file, uuid=my_args.add_uuid_to_filename)
     f = open('curl_cmds.log', 'w')
     for c in coms:
         f.write(c[1] + "\t" + c[0] + "\n")
     f.close()
+
     rc = Client()
     dview = rc[:]
     with dview.sync_imports():
