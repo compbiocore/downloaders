@@ -10,7 +10,7 @@ import pandas as pd
 import glob2, argparse, os
 import numpy as np
 from pybiomart import Dataset
-import sys
+#import sys
 
 #htseq_directory='/Users/jwalla12/Repositories/htseq_counts_for_ck/'
 
@@ -43,47 +43,22 @@ def append_gene_ids(counts_matrix, gene_id_table):
     counts_matrix_ids = count_ids.drop(labels=['Gene stable ID version'], axis=1).fillna(0)
     return counts_matrix_ids
 
-
-
 def insert_descriptions(counts_matrix, htseq_directory, output_suffix):
     d=['#Column descriptions:', '#gene: ENSEMBL gene ID and version (as reported in GDC outputs)','#ensembl_gene_ID: ENSEMBL gene ID without version information','#hcng_symbol: HUGO Gene Nomenclature Committee (HGNC) gene symbol','#gene_id: HGNC gene ID', '#Column E:AW: UUIDs as per the sample manifest file (see manifest tab)', '#The raw tab is the raw read counts from each htseq file', '#The normalized tab is the raw counts normalized by library size per UUID -- that is to say (the number of reads mapped to each gene for a given UUID)/(millions of reads mapped across all genes for a given UUID)', '#Excluded from this calculation is the following additional information reported in the gene column of the raw counts', '#See the HTSeq documentation for more information: https://htseq.readthedocs.io/en/release_0.11.1/count.html', '#__no_feature: reads (or read pairs) which could not be assigned to any feature (set S as described above was empty).', '#__ambiguous: reads (or read pairs) which could have been assigned to more than one feature and hence were not counted for any of these, unless the --nonunique all option was used (set S had more than one element).', '#__too_low_aQual: reads (or read pairs) which were skipped due to the -a option', '#__not_aligned: reads (or read pairs) in the SAM file without alignment', '#__alignment_not_unique: reads (or read pairs) with more than one reported alignment. These reads are recognized from the NH optional SAM field tag. (If the aligner does not set this field, multiply aligned reads will be counted multiple times, unless they get filtered out by the -a option.) Note that if the --nonuniqueall option was used, these reads (or read pairs) are still assigned to features.']
     header_df = pd.DataFrame(data=d)
-    #matrix_with_header = pd.concat([header_df, counts_matrix], ignore_index=True)
-   # matrix_with_header = pd.concat([header_df, counts_matrix])
     matrix_with_header = pd.concat([header_df, counts_matrix], ignore_index=True)
-    
-    
-    
     Gene_stable_ID = matrix_with_header['Gene stable ID']
     HGNC_ID = matrix_with_header['HGNC ID']
     HGNC_symbol = matrix_with_header['HGNC symbol']
     gene = matrix_with_header['gene']
-
     matrix_with_header = matrix_with_header.drop(['Gene stable ID', 'HGNC ID', 'HGNC symbol', 'gene'], axis=1)
-    
     matrix_with_header.insert(0, 'HGNC symbol', HGNC_symbol)
     matrix_with_header.insert(0, 'HGNC ID', HGNC_ID)
     matrix_with_header.insert(0, 'Gene stable ID', Gene_stable_ID)
     matrix_with_header.insert(0, 'gene', gene)   
-    
     matrix_with_header = matrix_with_header.set_index('gene')
-    
-    #matrix_with_header_fixed = matrix_with_header.set_index('gene')
     matrix_with_header.to_csv((htseq_directory+output_suffix)) #headers false too
     return matrix_with_header
-
-#def concat_prepended_text():
-#    args = get_args()
-#    gene_id_table = query_pybiomart()
-#    counts_matrix = compile_htseq_files(args.htseq_directory[0])
-#    counts_matrix_norm = normalize_htseq_files(counts_matrix)
-#    counts_matrix_with_ids = append_gene_ids(counts_matrix)
-#    counts_matrix_norm_with_ids = append_gene_ids(counts_matrix_norm)
-#    header = insert_descriptions()
-#    
-#    
-#    append_gene_ids_norm()
-#    insert_descriptions()
     
 if __name__ == '__main__':
     args = get_args()
